@@ -1,23 +1,41 @@
 package main
 
 import (
+	"database/sql"
+	"fmt"
 	"net"
+	"os"
 
-	pb "github.com/benchlord/timeclock/protos"
+	_ "github.com/lib/pq"
+
 	"google.golang.org/grpc"
+
+	"github.com/benchlord/timeclock/server/auth"
 )
 
 func main() {
+	lis, err := net.Listen("tcp", ":9001")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+
+	db, err := sql.Open("postgres", "sslmode=disable")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+
 	server := grpc.NewServer()
-	lis, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		panic(err)
+	authService := &auth.AuthService{
+		Handler: &auth.AuthHandler{
+			Db: db,
+		},
 	}
-	if err != nil {
-		panic(err)
-	}
-	pb.RegisterTimeClockServer(server, &TimeClockServer{})
+	authService.Register(server)
+
 	if err := server.Serve(lis); err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(2)
 	}
 }

@@ -25,4 +25,3 @@ func (t *TimeClockServer) ClockOut(ctx context.Context, req *pb.ClockOutRequest)
 func (t *TimeClockServer) GetHours(ctx context.Context, req *pb.GetHoursRequest) (*pb.GetHoursResponse, error) {
 	return &pb.GetHoursResponse{}, nil
 }
-
